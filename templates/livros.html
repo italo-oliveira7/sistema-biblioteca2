@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Livros — Biblioteca Escolar{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2 class="page-title">📚 Gerenciar Livros</h2>
+  <button class="btn btn-primary" onclick="document.getElementById('modal-novo').classList.add('active')">
+    + Novo Livro
+  </button>
+</div>
+
+<!-- BUSCA -->
+<form class="search-form" method="GET" action="{{ url_for('livros') }}">
+  <input type="text" name="busca" class="search-bar"
+         placeholder="Buscar por título ou autor..."
+         value="{{ busca }}"/>
+  <button type="submit" class="btn btn-primary">Buscar</button>
+  {% if busca %}
+    <a href="{{ url_for('livros') }}" class="btn btn-gray">Limpar</a>
+  {% endif %}
+</form>
+
+<!-- TABELA -->
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Título</th>
+        <th>Autor</th>
+        <th>ISBN</th>
+        <th>Quantidade</th>
+        <th>Disponível</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if livros %}
+        {% for livro in livros %}
+        <tr>
+          <td>{{ livro.id }}</td>
+          <td><strong>{{ livro.titulo }}</strong></td>
+          <td>{{ livro.autor }}</td>
+          <td>{{ livro.isbn or '—' }}</td>
+          <td>{{ livro.quantidade }}</td>
+          <td>
+            <span class="badge {{ 'badge-success' if livro.disponivel > 0 else 'badge-danger' }}">
+              {{ livro.disponivel }}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-warning btn-sm"
+              onclick="abrirEdicao({{ livro.id }}, '{{ livro.titulo }}', '{{ livro.autor }}', '{{ livro.isbn or '' }}', {{ livro.quantidade }})">
+              Editar
+            </button>
+            <a href="{{ url_for('livros_deletar', id_=livro.id) }}"
+               class="btn btn-danger btn-sm"
+               onclick="return confirm('Deseja excluir este livro?')">
+              Excluir
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="7" style="text-align:center; padding:50px; color:#aaa;">
+            Nenhum livro encontrado.
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+<!-- MODAL NOVO LIVRO -->
+<div class="modal-overlay" id="modal-novo">
+  <div class="modal">
+    <h3 class="modal-title">Novo Livro</h3>
+    <form method="POST" action="{{ url_for('livros_novo') }}">
+      <div class="form-group">
+        <label>Título *</label>
+        <input type="text" name="titulo" placeholder="Ex: Dom Casmurro" required/>
+      </div>
+      <div class="form-group">
+        <label>Autor *</label>
+        <input type="text" name="autor" placeholder="Ex: Machado de Assis" required/>
+      </div>
+      <div class="form-group">
+        <label>ISBN</label>
+        <input type="text" name="isbn" placeholder="Ex: 978-3-16-148410-0"/>
+      </div>
+      <div class="form-group">
+        <label>Quantidade *</label>
+        <input type="number" name="quantidade" min="1" value="1" required/>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-gray"
+          onclick="document.getElementById('modal-novo').classList.remove('active')">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL EDITAR LIVRO -->
+<div class="modal-overlay" id="modal-editar">
+  <div class="modal">
+    <h3 class="modal-title">Editar Livro</h3>
+    <form method="POST" id="form-editar">
+      <div class="form-group">
+        <label>Título *</label>
+        <input type="text" name="titulo" id="edit-titulo" required/>
+      </div>
+      <div class="form-group">
+        <label>Autor *</label>
+        <input type="text" name="autor" id="edit-autor" required/>
+      </div>
+      <div class="form-group">
+        <label>ISBN</label>
+        <input type="text" name="isbn" id="edit-isbn"/>
+      </div>
+      <div class="form-group">
+        <label>Quantidade *</label>
+        <input type="number" name="quantidade" id="edit-quantidade" min="1" required/>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-gray"
+          onclick="document.getElementById('modal-editar').classList.remove('active')">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function abrirEdicao(id, titulo, autor, isbn, quantidade) {
+  document.getElementById('edit-titulo').value    = titulo;
+  document.getElementById('edit-autor').value     = autor;
+  document.getElementById('edit-isbn').value      = isbn;
+  document.getElementById('edit-quantidade').value = quantidade;
+  document.getElementById('form-editar').action   =
+    '/livros/editar/' + id;
+  document.getElementById('modal-editar').classList.add('active');
+}
+</script>
+{% endblock %}

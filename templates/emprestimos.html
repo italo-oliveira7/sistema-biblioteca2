@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Empréstimos — Biblioteca Escolar{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2 class="page-title">🔄 Empréstimos</h2>
+  <button class="btn btn-warning"
+    onclick="document.getElementById('modal-novo').classList.add('active')">
+    + Novo Empréstimo
+  </button>
+</div>
+
+<!-- BUSCA -->
+<form class="search-form" method="GET" action="{{ url_for('emprestimos') }}">
+  <input type="text" name="busca" class="search-bar"
+         placeholder="Buscar por livro ou aluno..."
+         value="{{ busca }}"/>
+  <button type="submit" class="btn btn-warning">Buscar</button>
+  {% if busca %}
+    <a href="{{ url_for('emprestimos') }}" class="btn btn-gray">Limpar</a>
+  {% endif %}
+</form>
+
+<!-- TABELA -->
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Livro</th>
+        <th>Aluno</th>
+        <th>Turma</th>
+        <th>Data Empréstimo</th>
+        <th>Data Devolução</th>
+        <th>Status</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if emprestimos %}
+        {% for e in emprestimos %}
+        <tr>
+          <td>{{ e.id }}</td>
+          <td><strong>{{ e.titulo_livro }}</strong></td>
+          <td>{{ e.nome_aluno }}</td>
+          <td>{{ e.turma_aluno }}</td>
+          <td>{{ e.data_emprestimo }}</td>
+          <td>{{ e.data_devolucao or '—' }}</td>
+          <td>
+            <span class="badge {{ 'badge-success' if e.devolvido else 'badge-warning' }}">
+              {{ 'Devolvido' if e.devolvido else 'Em aberto' }}
+            </span>
+          </td>
+          <td>
+            {% if not e.devolvido %}
+              <a href="{{ url_for('emprestimos_devolver', id_=e.id) }}"
+                 class="btn btn-success btn-sm"
+                 onclick="return confirm('Confirmar devolução?')">
+                Devolver
+              </a>
+            {% else %}
+              <span style="color:#aaa; font-size:13px">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="8" style="text-align:center; padding:50px; color:#aaa;">
+            Nenhum empréstimo encontrado.
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+<!-- MODAL NOVO EMPRÉSTIMO -->
+<div class="modal-overlay" id="modal-novo">
+  <div class="modal">
+    <h3 class="modal-title">Novo Empréstimo</h3>
+    <form method="POST" action="{{ url_for('emprestimos_novo') }}">
+
+      <div class="form-group">
+        <label>Livro *</label>
+        <select name="livro_id" required>
+          <option value="">Selecione um livro...</option>
+          {% for livro in livros %}
+            <option value="{{ livro.id }}">
+              {{ livro.titulo }} — {{ livro.autor }}
+              ({{ livro.disponivel }} disponível)
+            </option>
+          {% endfor %}
+        </select>
+        {% if not livros %}
+          <small style="color:#e53935; margin-top:6px; display:block;">
+            Nenhum livro disponível no momento.
+          </small>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label>Aluno *</label>
+        <select name="aluno_id" required>
+          <option value="">Selecione um aluno...</option>
+          {% for aluno in alunos %}
+            <option value="{{ aluno.id }}">
+              {{ aluno.nome }} — {{ aluno.turma }}
+            </option>
+          {% endfor %}
+        </select>
+        {% if not alunos %}
+          <small style="color:#e53935; margin-top:6px; display:block;">
+            Nenhum aluno cadastrado ainda.
+          </small>
+        {% endif %}
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-gray"
+          onclick="document.getElementById('modal-novo').classList.remove('active')">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-warning"
+          {% if not livros or not alunos %}disabled title="Cadastre livros e alunos primeiro"{% endif %}>
+          Registrar Empréstimo
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — Biblioteca Escolar</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+  <style>
+
+    /* ── RESET DA PÁGINA DE LOGIN ── */
+    body {
+      background: #f0f2f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* ── HEADER FIXO IGUAL AO SISTEMA ── */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #3949ab;
+      color: white;
+      padding: 0 32px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      z-index: 100;
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1100px;
+      margin: 0 auto;
+      height: 64px;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-logo h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: white;
+    }
+
+    /* ── ÁREA CENTRAL ── */
+    .login-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      width: 100%;
+      padding: 100px 24px 40px;
+    }
+
+    /* ── CARD DO LOGIN ── */
+    .login-card {
+      background: white;
+      border-radius: 20px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 4px 24px rgba(57,73,171,0.10);
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(32px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    /* ── LOGO DO CARD ── */
+    .login-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 36px;
+    }
+
+    .login-logo .icon-circle {
+      width: 88px;
+      height: 88px;
+      background: #e8eaf6;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(57,73,171,0.13);
+    }
+
+    .login-logo h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a237e;
+      margin: 0;
+    }
+
+    .login-logo p {
+      font-size: 14px;
+      color: #888;
+      margin: 0;
+      text-align: center;
+    }
+
+    /* ── FLASH MESSAGES ── */
+    .flash-msg {
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .flash-msg.sucesso {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-left: 4px solid #2e7d32;
+    }
+
+    .flash-msg.erro {
+      background: #ffebee;
+      color: #c62828;
+      border-left: 4px solid #c62828;
+    }
+
+    .flash-msg.atencao {
+      background: #fff3e0;
+      color: #e65100;
+      border-left: 4px solid #e65100;
+    }
+
+    /* ── GRUPOS DO FORMULÁRIO ── */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 8px;
+    }
+
+    .form-group .input-wrapper {
+      position: relative;
+    }
+
+    .form-group .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #aaa;
+      font-size: 16px;
+      pointer-events: none;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 13px 14px 13px 42px;
+      border: 1.5px solid #ddd;
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: 'Segoe UI', sans-serif;
+      outline: none;
+      transition: border 0.2s, box-shadow 0.2s;
+      color: #333;
+      background: #fafafa;
+      box-sizing: border-box;
+    }
+
+    .form-group input:focus {
+      border-color: #3949ab;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(57,73,171,0.10);
+    }
+
+    .form-group input::placeholder {
+      color: #bbb;
+    }
+
+    /* ── BOTÃO PRINCIPAL ── */
+    .btn-entrar {
+      width: 100%;
+      padding: 14px;
+      background: #3949ab;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+      font-family: 'Segoe UI', sans-serif;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-entrar:hover {
+      background: #303f9f;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(57,73,171,0.25);
+    }
+
+    .btn-entrar:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    /* ── DIVISOR ── */
+    .divisor {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 24px 0 20px;
+    }
+
+    .divisor hr {
+      flex: 1;
+      border: none;
+      border-top: 1px solid #eee;
+    }
+
+    .divisor span {
+      font-size: 12px;
+      color: #bbb;
+      white-space: nowrap;
+    }
+
+    /* ── BOX DE CREDENCIAIS ── */
+    .credenciais-box {
+      background: #f5f7ff;
+      border: 1px solid #e8eaf6;
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+
+    .credenciais-box p {
+      font-size: 12px;
+      font-weight: 700;
+      color: #3949ab;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .credencial-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 0;
+      border-bottom: 1px solid #eef0fb;
+    }
+
+    .credencial-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .credencial-item .perfil {
+      font-size: 12px;
+      font-weight: 600;
+      color: #555;
+    }
+
+    .credencial-item .dados {
+      font-size: 12px;
+      color: #888;
+      font-family: monospace;
+    }
+
+    /* ── BADGE DO PERFIL ── */
+    .badge-perfil {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-right: 6px;
+    }
+
+    .badge-admin    { background: #e8eaf6; color: #3949ab; }
+    .badge-biblio   { background: #e0f2f1; color: #00695c; }
+    .badge-prof     { background: #fff3e0; color: #e65100; }
+
+    /* ── FOOTER ── */
+    .login-footer {
+      margin-top: 28px;
+      font-size: 12px;
+      color: #bbb;
+      text-align: center;
+    }
+
+    /* ── RESPONSIVO ── */
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 36px 24px;
+        border-radius: 16px;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- HEADER IGUAL AO SISTEMA -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-logo">
+        <svg width="28" height="28" fill="white" viewBox="0 0 24 24">
+          <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95
+            0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45
+            4.9 1 6v14.65c0 .25.25.5.5.5.1 0
+            .15-.05.25-.05C3.1 20.45 5.05 20 6.5
+            20c1.95 0 4.05.4 5.5 1.5 1.35-.85
+            3.8-1.5 5.5-1.5 1.65 0 3.35.3
+            4.75 1.05.1.05.15.05.25.05.25
+            0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0
+            13.5c-1.1-.35-2.3-.5-3.5-.5-1.7
+            0-4.15.65-5.5 1.5V8c1.35-.85
+            3.8-1.5 5.5-1.5 1.2 0 2.4.15
+            3.5.5v11.5z"/>
+        </svg>
+        <h1>Biblioteca Escolar</h1>
+      </div>
+      <!-- Sem nav no login — usuário ainda não está autenticado -->
+      <span style="color:rgba(255,255,255,0.65); font-size:13px;">
+        Acesso ao Sistema
+      </span>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO CENTRAL -->
+  <div class="login-wrapper">
+    <div class="login-card">
+
+      <!-- LOGO -->
+      <div class="login-logo">
+        <div class="icon-circle">
+          <svg width="46" height="46" fill="#3949ab" viewBox="0 0 24 24">
+            <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95
+              0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45
+              4.9 1 6v14.65c0 .25.25.5.5.5.1 0
+              .15-.05.25-.05C3.1 20.45 5.05 20 6.5
+              20c1.95 0 4.05.4 5.5 1.5 1.35-.85
+              3.8-1.5 5.5-1.5 1.65 0 3.35.3
+              4.75 1.05.1.05.15.05.25.05.25
+              0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0
+              13.5c-1.1-.35-2.3-.5-3.5-.5-1.7
+              0-4.15.65-5.5 1.5V8c1.35-.85
+              3.8-1.5 5.5-1.5 1.2 0 2.4.15
+              3.5.5v11.5z"/>
+          </svg>
+        </div>
+        <h2>Bem-vindo!</h2>
+        <p>Faça login para acessar a Biblioteca Escolar</p>
+      </div>
+
+      <!-- FLASH MESSAGES -->
+      {% with msgs = get_flashed_messages(with_categories=True) %}
+        {% for categoria, mensagem in msgs %}
+          <div class="flash-msg {{ categoria }}">{{ mensagem }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <!-- FORMULÁRIO DE LOGIN -->
+      <form method="POST" action="{{ url_for('login') }}" autocomplete="on">
+
+        <!-- CAMPO USUÁRIO -->
+        <div class="form-group">
+          <label for="usuario">Usuário</label>
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input
+              type="text"
+              id="usuario"
+              name="usuario"
+              placeholder="Digite seu usuário"
+              autocomplete="username"
+              required
+              autofocus
+            />
+          </div>
+        </div>
+
+        <!-- CAMPO SENHA -->
+        <div class="form-group">
+          <label for="senha">Senha</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input
+              type="password"
+              id="senha"
+              name="senha"
+              placeholder="Digite sua senha"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- BOTÃO ENTRAR -->
+        <button type="submit" class="btn-entrar">
+          Entrar no Sistema
+        </button>
+
+      </form>
+
+      <!-- DIVISOR -->
+      <div class="divisor">
+        <hr/><span>Credenciais de acesso</span><hr/>
+      </div>
+
+      <!-- BOX DE CREDENCIAIS -->
+      <div class="credenciais-box">
+        <p>
+          <svg width="14" height="14" fill="#3949ab" viewBox="0 0 24 24">
+            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7
+              3.24 7 6v2H6c-1.1 0-2 .9-2
+              2v10c0 1.1.9 2 2 2h12c1.1 0
+              2-.9 2-2V10c0-1.1-.9-2-2-2zm-6
+              9c-1.1 0-2-.9-2-2s.9-2
+              2-2 2 .9 2 2-.9 2-2
+              2zm3.1-9H8.9V6c0-1.71
+              1.39-3.1 3.1-3.1
+              1.71 0 3.1 1.39
+              3.1 3.1v2z"/>
+          </svg>
+          Perfis disponíveis para acesso:
+        </p>
+
+        <div class="credencial-item">
+          <span class="perfil">
+            <span class="badge-perfil badge-admin">Admin</span>
+            admin
+          </span>
+          <span class="dados">admin123</span>
+        </div>
+
+        <div class="credencial-item">
+          <span class="perfil">
+            <span class="badge-perfil badge-biblio">Bibliotecário</span>
+            bibliotecario
+          </span>
+          <span class="dados">biblio2026</span>
+        </div>
+
+        <div class="credencial-item">
+          <span class="perfil">
+            <span class="badge-perfil badge-prof">Professor</span>
+            professor
+          </span>
+          <span class="dados">prof2026</span>
+        </div>
+
+      </div>
+      <!-- fim credenciais -->
+
+    </div>
+    <!-- fim login-card -->
+
+    <!-- FOOTER -->
+    <div class="login-footer">
+      © 2026 Biblioteca Escolar &nbsp;·&nbsp; Python + Flask + SQLite
+    </div>
+
+  </div>
+  <!-- fim login-wrapper -->
+
+</body>
+</html>

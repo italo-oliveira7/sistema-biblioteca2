@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}Alunos — Biblioteca Escolar{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2 class="page-title">👨‍🎓 Gerenciar Alunos</h2>
+  <button class="btn btn-success"
+    onclick="document.getElementById('modal-novo').classList.add('active')">
+    + Novo Aluno
+  </button>
+</div>
+
+<form class="search-form" method="GET" action="{{ url_for('alunos') }}">
+  <input type="text" name="busca" class="search-bar"
+         placeholder="Buscar por nome, matrícula ou turma..."
+         value="{{ busca }}"/>
+  <button type="submit" class="btn btn-success">Buscar</button>
+  {% if busca %}
+    <a href="{{ url_for('alunos') }}" class="btn btn-gray">Limpar</a>
+  {% endif %}
+</form>
+
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Nome</th>
+        <th>Matrícula</th>
+        <th>Turma</th>
+        <th>Telefone</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if alunos %}
+        {% for aluno in alunos %}
+        <tr>
+          <td>{{ aluno.id }}</td>
+          <td><strong>{{ aluno.nome }}</strong></td>
+          <td>{{ aluno.matricula }}</td>
+          <td>{{ aluno.turma }}</td>
+          <td>{{ aluno.telefone or '—' }}</td>
+          <td>
+            <button class="btn btn-warning btn-sm"
+              onclick="abrirEdicao({{ aluno.id }}, '{{ aluno.nome }}', '{{ aluno.matricula }}', '{{ aluno.turma }}', '{{ aluno.telefone or '' }}')">
+              Editar
+            </button>
+            <a href="{{ url_for('alunos_deletar', id_=aluno.id) }}"
+               class="btn btn-danger btn-sm"
+               onclick="return confirm('Deseja excluir este aluno?')">
+              Excluir
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="6" style="text-align:center; padding:50px; color:#aaa;">
+            Nenhum aluno encontrado.
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+<!-- MODAL NOVO -->
+<div class="modal-overlay" id="modal-novo">
+  <div class="modal">
+    <h3 class="modal-title">Novo Aluno</h3>
+    <form method="POST" action="{{ url_for('alunos_novo') }}">
+      <div class="form-group">
+        <label>Nome *</label>
+        <input type="text" name="nome" placeholder="Ex: João Silva" required/>
+      </div>
+      <div class="form-group">
+        <label>Matrícula *</label>
+        <input type="text" name="matricula" placeholder="Ex: 2024001" required/>
+      </div>
+      <div class="form-group">
+        <label>Turma *</label>
+        <input type="text" name="turma" placeholder="Ex: 3º A" required/>
+      </div>
+      <div class="form-group">
+        <label>Telefone</label>
+        <input type="text" name="telefone" placeholder="Ex: (11) 99999-9999"/>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-gray"
+          onclick="document.getElementById('modal-novo').classList.remove('active')">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-success">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL EDITAR -->
+<div class="modal-overlay" id="modal-editar">
+  <div class="modal">
+    <h3 class="modal-title">Editar Aluno</h3>
+    <form method="POST" id="form-editar">
+      <div class="form-group">
+        <label>Nome *</label>
+        <input type="text" name="nome" id="edit-nome" required/>
+      </div>
+      <div class="form-group">
+        <label>Matrícula *</label>
+        <input type="text" name="matricula" id="edit-matricula" required/>
+      </div>
+      <div class="form-group">
+        <label>Turma *</label>
+        <input type="text" name="turma" id="edit-turma" required/>
+      </div>
+      <div class="form-group">
+        <label>Telefone</label>
+        <input type="text" name="telefone" id="edit-telefone"/>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-gray"
+          onclick="document.getElementById('modal-editar').classList.remove('active')">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-success">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function abrirEdicao(id, nome, matricula, turma, telefone) {
+  document.getElementById('edit-nome').value      = nome;
+  document.getElementById('edit-matricula').value = matricula;
+  document.getElementById('edit-turma').value     = turma;
+  document.getElementById('edit-telefone').value  = telefone;
+  document.getElementById('form-editar').action   = '/alunos/editar/' + id;
+  document.getElementById('modal-editar').classList.add('active');
+}
+</script>
+{% endblock %}
